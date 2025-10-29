@@ -1,5 +1,11 @@
 #include "DisplayHandler.h"
 
+/// @brief Constructor for the DisplayHandler class.
+/// @param _tft_RST The reset pin for the TFT display.
+/// @param _tft_DC The data/command pin for the TFT display.
+/// @param _tft_CS The chip select pin for the TFT display.
+/// @param _screenHeight The height of the display screen.
+/// @param _screenWidth The width of the display screen.
 DisplayHandler::DisplayHandler(int _tft_RST, int _tft_DC, int _tft_CS, int _screenHeight, int _screenWidth)
     : _screenHeight(_screenHeight), _screenWidth(_screenWidth), _tft(_tft_CS, _tft_DC, _tft_RST) // Hardware SPI
 {
@@ -18,6 +24,7 @@ DisplayHandler::DisplayHandler(int _tft_RST, int _tft_DC, int _tft_CS, int _scre
   _gaugeMap.insert(std::make_pair(_currentGaugeView, info));
 }
 
+/// @brief Displays the startup screen on the TFT display.
 void DisplayHandler::displayStartupScreen()
 {
   _tft.begin();
@@ -25,6 +32,7 @@ void DisplayHandler::displayStartupScreen()
   _tft.drawBitmap(20, 98, miata_logo, 200, 44, GC9A01A_RED);
 }
 
+/// @brief Displays the current gauge view on the TFT display.
 void DisplayHandler::display()
 {
   // If we select a new gauge, we need to redraw EVERYTHING.
@@ -51,12 +59,13 @@ void DisplayHandler::display()
   _gaugeViewUpdated = false;
 }
 
+/// @brief Clears the TFT display screen.
 void DisplayHandler::clearScreen()
 {
   _tft.fillScreen(GC9A01A_BLACK);
 }
 
-// Draws a back arrow used for unselecting gauge views
+/// @brief Draws a back arrow used for unselecting gauge views.
 void DisplayHandler::createBackArrow()
 {
   switch (_currentGaugeView)
@@ -72,6 +81,7 @@ void DisplayHandler::createBackArrow()
   }
 }
 
+/// @brief Clears the back arrow from the display.
 void DisplayHandler::clearBackArrow()
 {
   switch (_currentGaugeView)
@@ -87,7 +97,8 @@ void DisplayHandler::clearBackArrow()
   }
 }
 
-// Moves the cursor from the current gauge to the provided new index
+/// @brief Moves the cursor from the current gauge to the provided new index.
+/// @param gaugeIndex The index of the gauge to move the cursor to.
 void DisplayHandler::moveGaugeCursor(int gaugeIndex)
 {
   switch (_currentGaugeView)
@@ -107,6 +118,7 @@ void DisplayHandler::moveGaugeCursor(int gaugeIndex)
   }
 }
 
+/// @brief Clears the gauge cursor from the display.
 void DisplayHandler::clearGaugeCursor()
 {
   switch (_currentGaugeView)
@@ -123,7 +135,8 @@ void DisplayHandler::clearGaugeCursor()
   _gaugeCursorIndex = -1;
 }
 
-// Updates the gauge data and caches the old data for display refreshing
+/// @brief Updates the gauge data and caches the old data for display refreshing.
+/// @param newData The new gauge data to set.
 void DisplayHandler::setCurrentData(std::vector<std::pair<GaugeData, String>> newData)
 {
   _oldData = _currentData;
@@ -131,23 +144,33 @@ void DisplayHandler::setCurrentData(std::vector<std::pair<GaugeData, String>> ne
   _dataUpdated = true;
 }
 
+/// @brief Retrieves the current gauge data.
+/// @return The current gauge data.
 std::vector<std::pair<GaugeData, String>> DisplayHandler::getCurrentData()
 {
   return _currentData;
 }
 
+/// @brief Sets the current gauge view.
+/// @param newGauge The new gauge view to set.
 void DisplayHandler::setCurrentView(GaugeView newGauge)
 {
   _currentGaugeView = newGauge;
   _gaugeViewUpdated = true;
 }
 
+/// @brief Retrieves the current gauge view.
+/// @return The current gauge view.
 GaugeView DisplayHandler::getCurrentView()
 {
   return _currentGaugeView;
 }
 
-// Refreshes the data on a by digit basis given the data center X coordinate and top Y coordinate.
+/// @brief Refreshes the data on a by digit basis given the data center X coordinate and top Y coordinate.
+/// @param dataIndex The index of the data to refresh.
+/// @param fontSize The font size to use for the text.
+/// @param cursorX The X coordinate of the text cursor.
+/// @param cursorY The Y coordinate of the text cursor.
 void DisplayHandler::_refreshData(int dataIndex, FontSize fontSize, int cursorX, int cursorY)
 {
   _tft.setTextSize(int(fontSize));
@@ -193,7 +216,8 @@ void DisplayHandler::_refreshData(int dataIndex, FontSize fontSize, int cursorX,
   }
 }
 
-// Draws the data given the data center X coordinate and top Y coordinate.
+/// @brief Draws the data given the data center X coordinate and top Y coordinate.
+/// @param dataIndex The index of the data to draw.
 void DisplayHandler::_drawData(int dataIndex, FontSize fontSize, int cursorX, int cursorY)
 {
   if ((unsigned int)dataIndex >= _currentData.size())
@@ -209,7 +233,11 @@ void DisplayHandler::_drawData(int dataIndex, FontSize fontSize, int cursorX, in
   _tft.println(_currentData[dataIndex].second);
 }
 
-// Draws the label given the data center X coordinate and top Y coordinate.
+/// @brief Draws the label given the data center X coordinate and top Y coordinate.
+/// @param dataIndex The index of the data to draw.
+/// @param fontSize The font size to use for the text.
+/// @param cursorX The X coordinate of the text cursor.
+/// @param cursorY The Y coordinate of the text cursor.
 void DisplayHandler::_drawLabel(int dataIndex, FontSize fontSize, int cursorX, int cursorY)
 {
   if ((unsigned int)dataIndex >= _currentData.size())
@@ -226,7 +254,14 @@ void DisplayHandler::_drawLabel(int dataIndex, FontSize fontSize, int cursorX, i
   _tft.println(GaugeLabels[int(_currentData[dataIndex].first)]);
 }
 
-// Draws an icon if the data at the current index is active.
+/// @brief Draws an icon if the data at the current index is active.
+/// @param dataIndex The index of the data to check for icon drawing.
+/// @param bitmap The bitmap data for the icon.
+/// @param iconHeight The height of the icon in pixels.
+/// @param iconWidth The width of the icon in pixels.
+/// @param cursorX The X coordinate to draw the icon at.
+/// @param cursorY The Y coordinate to draw the icon at.
+/// @param color The color to draw the icon in.
 void DisplayHandler::_drawIcon(int dataIndex, const uint8_t* bitmap, int iconHeight, int iconWidth, int cursorX,
                                int cursorY, int color)
 {
@@ -246,26 +281,34 @@ void DisplayHandler::_drawIcon(int dataIndex, const uint8_t* bitmap, int iconHei
   }
 }
 
-// Returns the width in pixels of a given font size
+/// @brief Returns the width in pixels of a given font size
+/// @param fontSize The font size to measure
+/// @return The width in pixels
 int DisplayHandler::_getFontWidth(FontSize fontSize) const
 {
   // Font width grows in multiples of 6
   return int(fontSize) * 6;
 }
 
-// Returns the height in pixels of a given font size
+/// @brief Returns the height in pixels of a given font size
+/// @param fontSize The font size to measure
+/// @return The height in pixels
 int DisplayHandler::_getFontHeight(FontSize fontSize) const
 {
   // Font height grows in multiples of 8
   return int(fontSize) * 8;
 }
 
-// Returns the offset needed to center text at a given coordinate
+/// @brief Returns the center offset in pixels for a given font size and string length
+/// @param fontSize The font size to measure
+/// @param length The length of the string
+/// @return The center offset in pixels
 int DisplayHandler::_getCenterOffset(FontSize fontSize, int length) const
 {
   return (length * _getFontWidth(fontSize)) / 2;
 }
 
+/// @brief Draws the dashboard view on the TFT display.
 void DisplayHandler::_drawDashboard()
 {
   clearScreen();
@@ -294,6 +337,7 @@ void DisplayHandler::_drawDashboard()
   _drawIcon(6, cold_icon, 32, 32, (_screenWidth / 2) - 16, (_screenHeight / 2) + 80, GC9A01A_BLUE);
 }
 
+/// @brief Refreshes changed data on the dashboard view.
 void DisplayHandler::_refreshDashboard()
 {
   if (_dataUpdated)
@@ -329,6 +373,7 @@ void DisplayHandler::_refreshDashboard()
   }
 }
 
+/// @brief Draws the 4 gauge view on the TFT display.
 void DisplayHandler::_drawQuad()
 {
   clearScreen();
@@ -352,7 +397,7 @@ void DisplayHandler::_drawQuad()
   _drawData(3, FontSize::kFontSizeLarge, _screenWidth - (_screenWidth / 4), (_screenHeight / 2) + 30);
 }
 
-// Refreshes changed data on the 4 gauge view.
+/// @brief Refreshes changed data on the 4 gauge view.
 void DisplayHandler::_refreshQuad()
 {
   if (_dataUpdated)
@@ -376,6 +421,7 @@ void DisplayHandler::_refreshQuad()
   }
 }
 
+/// @brief Draws the 2 gauge view on the TFT display.
 void DisplayHandler::_drawDual()
 {
   clearScreen();
@@ -394,7 +440,7 @@ void DisplayHandler::_drawDual()
   _drawData(1, FontSize::kFontSizeXL, _screenWidth / 2, (_screenHeight / 2) + 55);
 }
 
-// Refreshes changed data on the 2 gauge view.
+/// @brief Refreshes changed data on the 2 gauge view.
 void DisplayHandler::_refreshDual()
 {
   if (_dataUpdated)
@@ -410,6 +456,7 @@ void DisplayHandler::_refreshDual()
   }
 }
 
+/// @brief Draws the 1 gauge view on the TFT display.
 void DisplayHandler::_drawSingle()
 {
   clearScreen();
@@ -424,7 +471,7 @@ void DisplayHandler::_drawSingle()
   _drawData(0, FontSize::kFontSizeXXXL, _screenWidth / 2, (_screenHeight / 2) - 70);
 }
 
-// Refreshes changed data on the 1 gauge view.
+/// @brief Refreshes changed data on the 1 gauge view.
 void DisplayHandler::_refreshSingle()
 {
   if (_dataUpdated)
@@ -436,7 +483,13 @@ void DisplayHandler::_refreshSingle()
   }
 }
 
-// Highlights the label given the data center X coordinate and top Y coordinate.
+/// @brief Highlights a label at the given position with specified text and background colors.
+/// @param dataIndex The index of the data whose label is to be highlighted.
+/// @param fontSize The font size to use for the label.
+/// @param cursorX The X coordinate of the label's center.
+/// @param cursorY The Y coordinate of the label's center.
+/// @param textColor The color to use for the text.
+/// @param backgroundColor The color to use for the background.
 void DisplayHandler::_highlightLabel(int dataIndex, FontSize fontSize, int cursorX, int cursorY, uint16_t textColor,
                                      uint16_t backgroundColor)
 {
@@ -459,7 +512,9 @@ void DisplayHandler::_highlightLabel(int dataIndex, FontSize fontSize, int curso
   _tft.println(GaugeLabels[int(_currentData[dataIndex].first)]);
 }
 
-// Highlights a gauge to be used as a cursor. Invert can be set to move the cursor.
+/// @brief Highlights a gauge to be used as a cursor. Invert can be set to move the cursor.
+/// @param textColor The color to use for the text.
+/// @param backgroundColor The color to use for the background.
 void DisplayHandler::_highlightQuadGauge(uint16_t textColor, uint16_t backgroundColor)
 {
   switch (_gaugeCursorIndex)
@@ -486,7 +541,9 @@ void DisplayHandler::_highlightQuadGauge(uint16_t textColor, uint16_t background
   }
 }
 
-// Highlights a gauge to be used as a cursor. Invert can be set to move the cursor.
+/// @brief Highlights a gauge to be used as a cursor. Invert can be set to move the cursor.
+/// @param textColor The color to use for the text.
+/// @param backgroundColor The color to use for the background.
 void DisplayHandler::_highlightDualGauge(uint16_t textColor, uint16_t backgroundColor)
 {
   switch (_gaugeCursorIndex)
@@ -505,6 +562,9 @@ void DisplayHandler::_highlightDualGauge(uint16_t textColor, uint16_t background
   }
 }
 
+/// @brief Draws the back arrow on the display with specified colors.
+/// @param arrowColor The color to use for the arrow.
+/// @param backgroundColor The color to use for the background.
 void DisplayHandler::_drawBackArrow(uint16_t arrowColor, uint16_t backgroundColor)
 {
   const int kBackArrowWidth = 30;
