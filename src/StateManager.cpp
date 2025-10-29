@@ -5,6 +5,10 @@
 #include <utility>
 #include <vector>
 
+/// @brief Constructor for the StateManager class.
+/// @param encoderHandler The encoder handler instance.
+/// @param canDataHandler The CAN data handler instance.
+/// @param displayHandler The display handler instance.
 StateManager::StateManager(EncoderHandler& encoderHandler, CanDataHandler& canDataHandler,
                            DisplayHandler& displayHandler)
     : _encoderHandler(encoderHandler), _canDataHandler(canDataHandler), _displayHandler(displayHandler)
@@ -22,7 +26,7 @@ StateManager::StateManager(EncoderHandler& encoderHandler, CanDataHandler& canDa
   _stateMap.insert(std::make_pair(kIdle, info));
 }
 
-// Polls for new information to update the display
+/// @brief Polls the encoder and CAN data, and handles user input.
 void StateManager::poll()
 {
   _canDataHandler.pollCan();
@@ -44,7 +48,7 @@ void StateManager::poll()
   }
 }
 
-// Retrieves the CAN data for the currently selected gauges and serves to the display.
+/// @brief Retrieves the CAN data for the currently selected gauges and serves to the display.
 void StateManager::serveData()
 {
   auto currentData = _displayHandler.getCurrentData();
@@ -61,7 +65,8 @@ void StateManager::serveData()
   _displayHandler.display();
 }
 
-// Updates the gauge state to a new view, and feeds all necessary info to init that view.
+/// @brief Updates the gauge state to a new view, and feeds all necessary info to init that view.
+/// @param newState The new gauge view state.
 void StateManager::_scrollGauge(int newState)
 {
   switch (_menuState)
@@ -82,7 +87,8 @@ void StateManager::_scrollGauge(int newState)
   }
 }
 
-// Loads data needed for a given state
+/// @brief Loads the gauge data for a given state/view.
+/// @param state The gauge view state to load data for.
 std::vector<std::pair<GaugeData, String>> StateManager::_loadStateData(GaugeView state)
 {
   std::vector<GaugeData> currentGauges;
@@ -110,7 +116,8 @@ std::vector<std::pair<GaugeData, String>> StateManager::_loadStateData(GaugeView
   return _canDataHandler.getGaugeData(currentGauges);
 }
 
-// Updates display and controls when a click is input
+/// @brief Selects a gauge or view based on user input.
+/// @param clicks The click events that triggered the selection.
 void StateManager::_select(Clicks clicks)
 {
   if (kIdle == _menuState)
@@ -179,7 +186,8 @@ void StateManager::_select(Clicks clicks)
   }
 }
 
-// Updates the encoder range and current value based upon view state
+/// @brief Updates the encoder settings based on the current menu state.
+/// @param initialValue The initial value to set the encoder to.
 void StateManager::_updateEncoder(int initialValue)
 {
   // Interval is dependent on the current state
@@ -209,6 +217,9 @@ void StateManager::_updateEncoder(int initialValue)
   _encoderHandler.setEncoderValue(initialValue);
 }
 
+/// @brief Retrieves the StateInfo for the given state, creating it if it does not exist.
+/// @param currentState The state to retrieve info for.
+/// @return An iterator to the StateInfo for the given state.
 std::unordered_map<State, StateInfo>::iterator StateManager::_getCurrentStateInfo(State currentState)
 {
   auto info = _stateMap.find(currentState);
