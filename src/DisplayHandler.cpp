@@ -378,9 +378,6 @@ void DisplayHandler::_drawQuad()
 {
   clearScreen();
 
-  _tft.drawFastHLine(0, _screenHeight / 2, _screenWidth, GC9A01A_WHITE);
-  _tft.drawFastVLine(_screenWidth / 2, 0, _screenHeight, GC9A01A_WHITE);
-
   if (_currentData.size() < 4)
   {
     Serial.println("Current data has less than 4 gauges!");
@@ -425,8 +422,6 @@ void DisplayHandler::_refreshQuad()
 void DisplayHandler::_drawDual()
 {
   clearScreen();
-
-  _tft.drawFastHLine(0, _screenHeight / 2, _screenWidth, GC9A01A_WHITE);
 
   if (_currentData.size() < 2)
   {
