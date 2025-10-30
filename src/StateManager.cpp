@@ -38,13 +38,18 @@ void StateManager::poll()
   _encoderHandler.pollButton();
 
   Clicks buttonPressed = _encoderHandler.buttonPressed();
+
   _currentView = _displayHandler.getCurrentView();
-  _currentIndex = _encoderHandler.getEncoderValue();
+
+  _currentDashboardGauges = _displayHandler.getCurrentDashboardGauges();
+  _currentQuadGauges = _displayHandler.getCurrentQuadGauges();
+  _currentDualGauges = _displayHandler.getCurrentDualGauges();
+  _currentSingleGauge = _displayHandler.getCurrentSingleGauge();
 
   // Handle user input
   if (_encoderHandler.encoderValueChanged())
   {
-    _scrollGauge(_currentIndex);
+    _handleScroll(_encoderHandler.getEncoderValue());
   }
 
   if (buttonPressed.singleClick || buttonPressed.doubleClick)
@@ -72,20 +77,23 @@ void StateManager::serveData()
 
 /// @brief Updates the gauge state to a new view, and feeds all necessary info to init that view.
 /// @param newState The new gauge view state.
-void StateManager::_scrollGauge(int newState)
+void StateManager::_handleScroll(int newState)
 {
   switch (_menuState)
   {
   case kIdle:
     // Scroll through the list of views
+    Serial.println("Scroll: " + String(newState));
     _displayHandler.setCurrentView(static_cast<GaugeView>(newState));
     _displayHandler.setCurrentData(_loadStateData(static_cast<GaugeView>(newState)));
     break;
   case kViewSelected:
     // Scroll through the individual gauges on a view
     _displayHandler.moveGaugeCursor(newState);
+    _currentGaugeCursorIndex = _displayHandler.getCurrentGaugeCursorIndex();
     break;
   case kItemSelected:
+    // Scroll through the list of possible gauges to replace
     break;
   default:
     Serial.println("This state does not support scrolling!");
@@ -120,7 +128,7 @@ void StateManager::_handleIdleClick()
   case GaugeView::kQuadGauge:
   case GaugeView::kDualGauge: {
     auto currentStateInfo = _getCurrentStateInfo(_menuState);
-    currentStateInfo->second.index = _currentIndex;
+    currentStateInfo->second.index = 0;
 
     _menuState = kViewSelected;
     _updateEncoder(0);
@@ -141,7 +149,7 @@ void StateManager::_handleViewSelectedClick(Clicks clicks)
   if (clicks.singleClick)
   {
     // Back arrow goes back up to top level view
-    if (_encoderHandler.getMax() == _currentIndex)
+    if (_encoderHandler.getMax() == _currentGaugeCursorIndex)
     {
       _menuState = kIdle;
 
@@ -155,7 +163,7 @@ void StateManager::_handleViewSelectedClick(Clicks clicks)
     {
       // Save the index of the previous screen
       auto currentStateInfo = _getCurrentStateInfo(_menuState);
-      currentStateInfo->second.index = _currentIndex;
+      currentStateInfo->second.index = 0;
 
       _menuState = kItemSelected;
       _updateEncoder(0);
@@ -220,13 +228,13 @@ std::vector<std::pair<GaugeData, String>> StateManager::_loadStateData(GaugeView
   switch (state)
   {
   case GaugeView::kDashboard:
-    currentGauges = _currentDashboardGauges;
+    currentGauges = {_currentDashboardGauges};
     break;
   case GaugeView::kQuadGauge:
-    currentGauges = _currentQuadGauges;
+    currentGauges = {_currentQuadGauges};
     break;
   case GaugeView::kDualGauge:
-    currentGauges = _currentDualGauges;
+    currentGauges = {_currentDualGauges};
     break;
   case GaugeView::kSingleGauge:
     currentGauges = {_currentSingleGauge};

@@ -44,7 +44,7 @@ private:
   State _menuState;
 
   GaugeView _currentView;
-  int _currentIndex;
+  int _currentGaugeCursorIndex;
 
   std::vector<GaugeData> _currentDashboardGauges;
   std::vector<GaugeData> _currentQuadGauges;
@@ -53,7 +53,8 @@ private:
 
   std::unordered_map<State, StateInfo> _stateMap;
 
-  void _scrollGauge(int newValue);
+  void _handleScroll(int newValue);
+  void _handleItemSelectedScroll(int newValue);
   void _handleClick(Clicks clicks);
   void _handleIdleClick();
   void _handleViewSelectedClick(Clicks clicks);
