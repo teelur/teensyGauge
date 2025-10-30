@@ -49,7 +49,10 @@ private:
   std::unordered_map<State, StateInfo> _stateMap;
 
   void _scrollGauge(int newValue);
-  void _select(Clicks clicks);
+  void _handleClick(Clicks clicks);
+  void _handleIdleClick();
+  void _handleViewSelectedClick(Clicks clicks);
+  void _handleItemSelectedClick(Clicks clicks);
   void _updateEncoder(int initialValue);
   std::vector<std::pair<GaugeData, String>> _loadStateData(GaugeView state);
   std::unordered_map<State, StateInfo>::iterator _getCurrentStateInfo(State currentState);

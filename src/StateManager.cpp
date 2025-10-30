@@ -44,7 +44,7 @@ void StateManager::poll()
 
   if (buttonPressed.singleClick || buttonPressed.doubleClick)
   {
-    _select(buttonPressed);
+    _handleClick(buttonPressed);
   }
 }
 
@@ -116,11 +116,28 @@ std::vector<std::pair<GaugeData, String>> StateManager::_loadStateData(GaugeView
   return _canDataHandler.getGaugeData(currentGauges);
 }
 
-/// @brief Selects a gauge or view based on user input.
-/// @param clicks The click events that triggered the selection.
-void StateManager::_select(Clicks clicks)
+/// @brief Handles user clicks based on the current menu state.
+/// @param clicks The click events that triggered the action.
+void StateManager::_handleClick(Clicks clicks)
 {
-  if (kIdle == _menuState)
+  switch (_menuState)
+  {
+  case kIdle:
+    _handleIdleClick();
+    break;
+  case kViewSelected:
+    _handleViewSelectedClick(clicks);
+    break;
+  case kItemSelected:
+    _handleItemSelectedClick(clicks);
+    break;
+  default:
+    Serial.println("This state does not support selection!");
+  }
+}
+
+/// @brief Handles click events in the Idle state.
+void StateManager::_handleIdleClick()
   {
     switch (_currentView)
     {
@@ -140,7 +157,10 @@ void StateManager::_select(Clicks clicks)
       Serial.println("Select not supported on this gauge view!");
     }
   }
-  else if (kViewSelected == _menuState)
+
+/// @brief Handles click events in the View Selected state.
+/// @param clicks The click events that triggered the action.
+void StateManager::_handleViewSelectedClick(Clicks clicks)
   {
     if (clicks.singleClick)
     {
@@ -168,7 +188,10 @@ void StateManager::_select(Clicks clicks)
       }
     }
   }
-  else if (kItemSelected == _menuState)
+
+/// @brief Handles click events in the Item Selected state.
+/// @param clicks The click events that triggered the action.
+void StateManager::_handleItemSelectedClick(Clicks clicks)
   {
     if (clicks.singleClick)
     {
@@ -178,11 +201,6 @@ void StateManager::_select(Clicks clicks)
       _updateEncoder(currentStateInfo->second.index);
 
       _displayHandler.createBackArrow();
-    }
-  }
-  else
-  {
-    Serial.println("Select is not supported on this view!");
   }
 }
 
