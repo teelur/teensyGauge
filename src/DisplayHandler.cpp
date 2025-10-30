@@ -9,7 +9,7 @@
 DisplayHandler::DisplayHandler(int _tft_RST, int _tft_DC, int _tft_CS, int _screenHeight, int _screenWidth)
     : _screenHeight(_screenHeight), _screenWidth(_screenWidth), _tft(_tft_CS, _tft_DC, _tft_RST) // Hardware SPI
 {
-  // Need to keep track of the previously highlighted gauge when moving cursors. Setting -1 indicates not in use.
+  // Initialize gauge cursor index to -1 (no selection).
   _gaugeCursorIndex = -1;
 
   // GaugeMin and GaugeMax window the selectable gauges. Stuff in development can be put outside of this window
@@ -18,6 +18,14 @@ DisplayHandler::DisplayHandler(int _tft_RST, int _tft_DC, int _tft_CS, int _scre
 
   // We need to draw the first gauge.
   _gaugeViewUpdated = true;
+
+  // Default gauges for each view
+  // TODO: Load saved user preferences here
+  _currentDashboardGauges = {GaugeData::kAFR,     GaugeData::kCLT, GaugeData::kMAT, GaugeData::kMAP,
+                             GaugeData::kVoltage, GaugeData::kFan, GaugeData::kWUE};
+  _currentQuadGauges = {GaugeData::kRPM, GaugeData::kTPS, GaugeData::kMAP, GaugeData::kCLT};
+  _currentDualGauges = {GaugeData::kRPM, GaugeData::kTPS};
+  _currentSingleGauge = GaugeData::kRPM;
 
   // TODO: Figure out how I want to use this for caching gauge selections
   GaugeInfo info;
@@ -97,6 +105,13 @@ void DisplayHandler::clearBackArrow()
   }
 }
 
+/// @brief Retrieves the current gauge cursor index.
+/// @return The current gauge cursor index.
+int DisplayHandler::getCurrentGaugeCursorIndex()
+{
+  return _gaugeCursorIndex;
+}
+
 /// @brief Moves the cursor from the current gauge to the provided new index.
 /// @param gaugeIndex The index of the gauge to move the cursor to.
 void DisplayHandler::moveGaugeCursor(int gaugeIndex)
@@ -164,6 +179,62 @@ void DisplayHandler::setCurrentView(GaugeView newGauge)
 GaugeView DisplayHandler::getCurrentView()
 {
   return _currentGaugeView;
+}
+
+/// @brief Sets the current dashboard gauges.
+/// @param gauges The new dashboard gauges to set.
+void DisplayHandler::setCurrentDashboardGauges(std::vector<GaugeData> gauges)
+{
+  _currentDashboardGauges = gauges;
+}
+
+/// @brief Retrieves the current dashboard gauges.
+/// @return The current dashboard gauges.
+std::vector<GaugeData> DisplayHandler::getCurrentDashboardGauges()
+{
+  return _currentDashboardGauges;
+}
+
+/// @brief Sets the current quad gauges.
+/// @param gauges The new quad gauges to set.
+void DisplayHandler::setCurrentQuadGauges(std::vector<GaugeData> gauges)
+{
+  _currentQuadGauges = gauges;
+}
+
+/// @brief Retrieves the current quad gauges.
+/// @return The current quad gauges.
+std::vector<GaugeData> DisplayHandler::getCurrentQuadGauges()
+{
+  return _currentQuadGauges;
+}
+
+/// @brief Sets the current dual gauges.
+/// @param gauges The new dual gauges to set.
+void DisplayHandler::setCurrentDualGauges(std::vector<GaugeData> gauges)
+{
+  _currentDualGauges = gauges;
+}
+
+/// @brief Retrieves the current dual gauges.
+/// @return The current dual gauges.
+std::vector<GaugeData> DisplayHandler::getCurrentDualGauges()
+{
+  return _currentDualGauges;
+}
+
+/// @brief Sets the current single gauge.
+/// @param gauge The new single gauge to set.
+void DisplayHandler::setCurrentSingleGauge(GaugeData gauge)
+{
+  _currentSingleGauge = gauge;
+}
+
+/// @brief Retrieves the current single gauge.
+/// @return The current single gauge.
+GaugeData DisplayHandler::getCurrentSingleGauge()
+{
+  return _currentSingleGauge;
 }
 
 /// @brief Refreshes the data on a by digit basis given the data center X coordinate and top Y coordinate.

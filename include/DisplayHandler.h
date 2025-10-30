@@ -20,6 +20,7 @@ enum class FontSize : int
   kFontSizeXXXL = 6,   // Font size 36x52
 };
 
+/// @brief Enum representing different gauge views.
 enum class GaugeView : int
 {
   kDashboard = 0,
@@ -47,6 +48,8 @@ public:
 
   void createBackArrow();
   void clearBackArrow();
+
+  int getCurrentGaugeCursorIndex();
   void moveGaugeCursor(int gaugeIndex);
   void clearGaugeCursor();
 
@@ -55,6 +58,18 @@ public:
 
   void setCurrentView(GaugeView newGauge);
   GaugeView getCurrentView();
+
+  void setCurrentDashboardGauges(std::vector<GaugeData> gauges);
+  std::vector<GaugeData> getCurrentDashboardGauges();
+
+  void setCurrentQuadGauges(std::vector<GaugeData> gauges);
+  std::vector<GaugeData> getCurrentQuadGauges();
+
+  void setCurrentDualGauges(std::vector<GaugeData> gauges);
+  std::vector<GaugeData> getCurrentDualGauges();
+
+  void setCurrentSingleGauge(GaugeData gauges);
+  GaugeData getCurrentSingleGauge();
 
 private:
   const int _screenHeight;
@@ -66,6 +81,12 @@ private:
 
   GaugeView _currentGaugeView;
   bool _gaugeViewUpdated;
+
+  std::vector<GaugeData> _currentDashboardGauges;
+  std::vector<GaugeData> _currentQuadGauges;
+  std::vector<GaugeData> _currentDualGauges;
+  GaugeData _currentSingleGauge;
+
   std::vector<std::pair<GaugeData, String>> _currentData;
   std::vector<std::pair<GaugeData, String>> _oldData;
   bool _dataUpdated;
