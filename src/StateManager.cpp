@@ -87,35 +87,6 @@ void StateManager::_scrollGauge(int newState)
   }
 }
 
-/// @brief Loads the gauge data for a given state/view.
-/// @param state The gauge view state to load data for.
-std::vector<std::pair<GaugeData, String>> StateManager::_loadStateData(GaugeView state)
-{
-  std::vector<GaugeData> currentGauges;
-
-  // TODO: This should come from some cached value, so that users don't have to set this up every power cycle
-  switch (state)
-  {
-  case GaugeView::kDashboard:
-    currentGauges = {GaugeData::kAFR,     GaugeData::kCLT, GaugeData::kMAT, GaugeData::kMAP,
-                     GaugeData::kVoltage, GaugeData::kFan, GaugeData::kWUE};
-    break;
-  case GaugeView::kQuadGauge:
-    currentGauges = {GaugeData::kRPM, GaugeData::kTPS, GaugeData::kMAP, GaugeData::kCLT};
-    break;
-  case GaugeView::kDualGauge:
-    currentGauges = {GaugeData::kRPM, GaugeData::kTPS};
-    break;
-  case GaugeView::kSingleGauge:
-    currentGauges = {GaugeData::kRPM};
-    break;
-  default:
-    Serial.println("No stored data for this given state!");
-  }
-
-  return _canDataHandler.getGaugeData(currentGauges);
-}
-
 /// @brief Handles user clicks based on the current menu state.
 /// @param clicks The click events that triggered the action.
 void StateManager::_handleClick(Clicks clicks)
@@ -235,8 +206,37 @@ void StateManager::_updateEncoder(int initialValue)
   _encoderHandler.setEncoderValue(initialValue);
 }
 
-/// @brief Retrieves the StateInfo for the given state, creating it if it does not exist.
-/// @param currentState The state to retrieve info for.
+/// @brief Loads the gauge data for a given state/view.
+/// @param state The gauge view state to load data for.
+std::vector<std::pair<GaugeData, String>> StateManager::_loadStateData(GaugeView state)
+{
+  std::vector<GaugeData> currentGauges;
+
+  // TODO: This should come from some cached value, so that users don't have to set this up every power cycle
+  switch (state)
+  {
+  case GaugeView::kDashboard:
+    currentGauges = {GaugeData::kAFR,     GaugeData::kCLT, GaugeData::kMAT, GaugeData::kMAP,
+                     GaugeData::kVoltage, GaugeData::kFan, GaugeData::kWUE};
+    break;
+  case GaugeView::kQuadGauge:
+    currentGauges = {GaugeData::kRPM, GaugeData::kTPS, GaugeData::kMAP, GaugeData::kCLT};
+    break;
+  case GaugeView::kDualGauge:
+    currentGauges = {GaugeData::kRPM, GaugeData::kTPS};
+    break;
+  case GaugeView::kSingleGauge:
+    currentGauges = {GaugeData::kRPM};
+    break;
+  default:
+    Serial.println("No stored data for this given state!");
+  }
+
+  return _canDataHandler.getGaugeData(currentGauges);
+}
+
+/// @brief Retrieves the StateInfo iterator for the given state, creating a new entry if it doesn't exist.
+/// @param currentState The state to retrieve information for.
 /// @return An iterator to the StateInfo for the given state.
 std::unordered_map<State, StateInfo>::iterator StateManager::_getCurrentStateInfo(State currentState)
 {
