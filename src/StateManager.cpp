@@ -20,6 +20,11 @@ StateManager::StateManager(EncoderHandler& encoderHandler, CanDataHandler& canDa
   _encoderHandler.setEncoderValue(int(_currentView));
 
   // Need to feed the display some initial data
+  _currentDashboardGauges = _displayHandler.getCurrentDashboardGauges();
+  _currentQuadGauges = _displayHandler.getCurrentQuadGauges();
+  _currentDualGauges = _displayHandler.getCurrentDualGauges();
+  _currentSingleGauge = _displayHandler.getCurrentSingleGauge();
+
   _displayHandler.setCurrentData(_loadStateData(_currentView));
 
   StateInfo info;
@@ -109,69 +114,69 @@ void StateManager::_handleClick(Clicks clicks)
 
 /// @brief Handles click events in the Idle state.
 void StateManager::_handleIdleClick()
+{
+  switch (_currentView)
   {
-    switch (_currentView)
-    {
-    case GaugeView::kQuadGauge:
-    case GaugeView::kDualGauge: {
-      auto currentStateInfo = _getCurrentStateInfo(_menuState);
-      currentStateInfo->second.index = _currentIndex;
+  case GaugeView::kQuadGauge:
+  case GaugeView::kDualGauge: {
+    auto currentStateInfo = _getCurrentStateInfo(_menuState);
+    currentStateInfo->second.index = _currentIndex;
 
-      _menuState = kViewSelected;
-      _updateEncoder(0);
+    _menuState = kViewSelected;
+    _updateEncoder(0);
 
-      _displayHandler.moveGaugeCursor(0);
-      _displayHandler.createBackArrow();
-      break;
-    }
-    default:
-      Serial.println("Select not supported on this gauge view!");
-    }
+    _displayHandler.moveGaugeCursor(0);
+    _displayHandler.createBackArrow();
+    break;
   }
+  default:
+    Serial.println("Select not supported on this gauge view!");
+  }
+}
 
 /// @brief Handles click events in the View Selected state.
 /// @param clicks The click events that triggered the action.
 void StateManager::_handleViewSelectedClick(Clicks clicks)
+{
+  if (clicks.singleClick)
   {
-    if (clicks.singleClick)
+    // Back arrow goes back up to top level view
+    if (_encoderHandler.getMax() == _currentIndex)
     {
-      // Back arrow goes back up to top level view
-      if (_encoderHandler.getMax() == _currentIndex)
-      {
-        _menuState = kIdle;
-
-        auto currentStateInfo = _getCurrentStateInfo(_menuState);
-        _updateEncoder(currentStateInfo->second.index);
-
-        _displayHandler.clearGaugeCursor();
-        _displayHandler.clearBackArrow();
-      }
-      else
-      {
-        // Save the index of the previous screen
-        auto currentStateInfo = _getCurrentStateInfo(_menuState);
-        currentStateInfo->second.index = _currentIndex;
-
-        _menuState = kItemSelected;
-        _updateEncoder(0);
-
-        _displayHandler.clearBackArrow();
-      }
-    }
-  }
-
-/// @brief Handles click events in the Item Selected state.
-/// @param clicks The click events that triggered the action.
-void StateManager::_handleItemSelectedClick(Clicks clicks)
-  {
-    if (clicks.singleClick)
-    {
-      _menuState = kViewSelected;
+      _menuState = kIdle;
 
       auto currentStateInfo = _getCurrentStateInfo(_menuState);
       _updateEncoder(currentStateInfo->second.index);
 
-      _displayHandler.createBackArrow();
+      _displayHandler.clearGaugeCursor();
+      _displayHandler.clearBackArrow();
+    }
+    else
+    {
+      // Save the index of the previous screen
+      auto currentStateInfo = _getCurrentStateInfo(_menuState);
+      currentStateInfo->second.index = _currentIndex;
+
+      _menuState = kItemSelected;
+      _updateEncoder(0);
+
+      _displayHandler.clearBackArrow();
+    }
+  }
+}
+
+/// @brief Handles click events in the Item Selected state.
+/// @param clicks The click events that triggered the action.
+void StateManager::_handleItemSelectedClick(Clicks clicks)
+{
+  if (clicks.singleClick)
+  {
+    _menuState = kViewSelected;
+
+    auto currentStateInfo = _getCurrentStateInfo(_menuState);
+    _updateEncoder(currentStateInfo->second.index);
+
+    _displayHandler.createBackArrow();
   }
 }
 
@@ -212,21 +217,19 @@ std::vector<std::pair<GaugeData, String>> StateManager::_loadStateData(GaugeView
 {
   std::vector<GaugeData> currentGauges;
 
-  // TODO: This should come from some cached value, so that users don't have to set this up every power cycle
   switch (state)
   {
   case GaugeView::kDashboard:
-    currentGauges = {GaugeData::kAFR,     GaugeData::kCLT, GaugeData::kMAT, GaugeData::kMAP,
-                     GaugeData::kVoltage, GaugeData::kFan, GaugeData::kWUE};
+    currentGauges = _currentDashboardGauges;
     break;
   case GaugeView::kQuadGauge:
-    currentGauges = {GaugeData::kRPM, GaugeData::kTPS, GaugeData::kMAP, GaugeData::kCLT};
+    currentGauges = _currentQuadGauges;
     break;
   case GaugeView::kDualGauge:
-    currentGauges = {GaugeData::kRPM, GaugeData::kTPS};
+    currentGauges = _currentDualGauges;
     break;
   case GaugeView::kSingleGauge:
-    currentGauges = {GaugeData::kRPM};
+    currentGauges = {_currentSingleGauge};
     break;
   default:
     Serial.println("No stored data for this given state!");

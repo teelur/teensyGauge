@@ -46,6 +46,11 @@ private:
   GaugeView _currentView;
   int _currentIndex;
 
+  std::vector<GaugeData> _currentDashboardGauges;
+  std::vector<GaugeData> _currentQuadGauges;
+  std::vector<GaugeData> _currentDualGauges;
+  GaugeData _currentSingleGauge;
+
   std::unordered_map<State, StateInfo> _stateMap;
 
   void _scrollGauge(int newValue);
