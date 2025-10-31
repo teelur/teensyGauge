@@ -1,0 +1,5 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "teensyCanLibrary")(type "KiCad")(uri "${KIPRJMOD}/library/teensyCanLibrary.pretty")(options "")(descr ""))
+  (lib (name "teensy")(type "KiCad")(uri "${KIPRJMOD}/library/teensy.pretty")(options "")(descr ""))
+)
