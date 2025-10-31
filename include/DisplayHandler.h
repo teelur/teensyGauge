@@ -6,6 +6,7 @@
 #include <Adafruit_GC9A01A.h>
 #include <Adafruit_GFX.h>
 #include <SPI.h>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -19,6 +20,7 @@ enum class FontSize : int
   kFontSizeXXXL = 6,   // Font size 36x52
 };
 
+/// @brief Enum representing different gauge views.
 enum class GaugeView : int
 {
   kDashboard = 0,
@@ -27,6 +29,11 @@ enum class GaugeView : int
   kSingleGauge = 3,
   kGaugeMin = kDashboard,
   kGaugeMax = kSingleGauge,
+};
+
+struct GaugeInfo
+{
+  std::vector<GaugeData> gauges;
 };
 
 class DisplayHandler
@@ -39,6 +46,10 @@ public:
   void display();
   void clearScreen();
 
+  void createBackArrow();
+  void clearBackArrow();
+
+  int getCurrentGaugeCursorIndex();
   void moveGaugeCursor(int gaugeIndex);
   void clearGaugeCursor();
 
@@ -48,14 +59,34 @@ public:
   void setCurrentView(GaugeView newGauge);
   GaugeView getCurrentView();
 
+  void setCurrentDashboardGauges(std::vector<GaugeData> gauges);
+  std::vector<GaugeData> getCurrentDashboardGauges();
+
+  void setCurrentQuadGauges(std::vector<GaugeData> gauges);
+  std::vector<GaugeData> getCurrentQuadGauges();
+
+  void setCurrentDualGauges(std::vector<GaugeData> gauges);
+  std::vector<GaugeData> getCurrentDualGauges();
+
+  void setCurrentSingleGauge(GaugeData gauges);
+  GaugeData getCurrentSingleGauge();
+
 private:
   const int _screenHeight;
   const int _screenWidth;
 
   Adafruit_GC9A01A _tft;
 
+  std::unordered_map<GaugeView, GaugeInfo> _gaugeMap;
+
   GaugeView _currentGaugeView;
   bool _gaugeViewUpdated;
+
+  std::vector<GaugeData> _currentDashboardGauges;
+  std::vector<GaugeData> _currentQuadGauges;
+  std::vector<GaugeData> _currentDualGauges;
+  GaugeData _currentSingleGauge;
+
   std::vector<std::pair<GaugeData, String>> _currentData;
   std::vector<std::pair<GaugeData, String>> _oldData;
   bool _dataUpdated;
@@ -87,4 +118,6 @@ private:
   void _highlightQuadGauge(uint16_t textColor, uint16_t backgroundColor);
   void _highlightDualGauge(uint16_t textColor, uint16_t backgroundColor);
   void _highlightSingleGauge(uint16_t textColor, uint16_t backgroundColor);
+
+  void _drawBackArrow(uint16_t arrowColor, uint16_t backgroundColor);
 };

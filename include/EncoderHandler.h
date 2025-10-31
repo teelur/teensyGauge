@@ -4,11 +4,10 @@
 #include <Chrono.h>
 #include <EncoderTool.h>
 
-enum Clicks : int
+struct Clicks
 {
-  kNoClick = 0,
-  kSingleClick = 1,
-  kDoubleClick = 2,
+  bool singleClick = false;
+  bool doubleClick = false;
 };
 
 class EncoderHandler
@@ -26,7 +25,10 @@ public:
   void setDoubleClickSpeed(int doubleClickSpeed);
   int getDoubleClickSpeed();
 
-  int buttonPressed();
+  int getMin();
+  int getMax();
+
+  Clicks buttonPressed();
 
 private:
   EncoderTool::Encoder _encoder;
@@ -35,4 +37,7 @@ private:
   Chrono _clickTimer;
   Clicks _clicks;
   int _doubleClickSpeed;
+
+  int _min;
+  int _max;
 };

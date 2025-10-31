@@ -3,6 +3,9 @@
 #include "MegaSquirtInfo.h"
 
 #include <DisplayHandler.h>
+#include <EncoderHandler.h>
+
+#include <unordered_map>
 
 class CanDataHandler;
 class EncoderHandler;
@@ -17,6 +20,11 @@ enum State : int
   kViewSelected = 1,
   kItemSelected = 2,
   kSettingsSelected = 3,
+};
+
+struct StateInfo
+{
+  int index = 0;
 };
 
 class StateManager
@@ -35,8 +43,23 @@ private:
 
   State _menuState;
 
-  void _scrollGauge(int newValue);
-  void _select(int numClicks);
-  void _updateEncoder();
+  GaugeView _currentView;
+  int _currentGaugeCursorIndex;
+
+  std::vector<GaugeData> _currentDashboardGauges;
+  std::vector<GaugeData> _currentQuadGauges;
+  std::vector<GaugeData> _currentDualGauges;
+  GaugeData _currentSingleGauge;
+
+  std::unordered_map<State, StateInfo> _stateMap;
+
+  void _handleScroll(int newValue);
+  void _handleItemSelectedScroll(int newValue);
+  void _handleClick(Clicks clicks);
+  void _handleIdleClick();
+  void _handleViewSelectedClick(Clicks clicks);
+  void _handleItemSelectedClick(Clicks clicks);
+  void _updateEncoder(int initialValue);
   std::vector<std::pair<GaugeData, String>> _loadStateData(GaugeView state);
+  std::unordered_map<State, StateInfo>::iterator _getCurrentStateInfo(State currentState);
 };

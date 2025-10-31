@@ -9,6 +9,8 @@ constexpr uint32_t kBaseID = 1520; // This is set in megasquirt (typically 1520)
 MegaCAN_broadcast_message_t CanDataHandler::_bCastMsg = {};
 MegaCAN CanDataHandler::_mega_can(kBaseID);
 
+/// @brief Initializes the CAN bus.
+/// @param canBaud The baud rate for the CAN bus.
 void CanDataHandler::initCan(int canBaud)
 {
   can.begin();
@@ -20,11 +22,14 @@ void CanDataHandler::initCan(int canBaud)
   can.mailboxStatus();
 }
 
+/// @brief Polls the CAN bus for events.
 void CanDataHandler::pollCan()
 {
   can.events();
 }
 
+/// @brief Retrieves gauge data based on the provided gauges.
+/// @param gauges A vector of GaugeData enums specifying which gauges to retrieve.
 std::vector<std::pair<GaugeData, String>> CanDataHandler::getGaugeData(const std::vector<GaugeData>& gauges)
 {
   std::vector<std::pair<GaugeData, String>> data;
@@ -67,7 +72,8 @@ std::vector<std::pair<GaugeData, String>> CanDataHandler::getGaugeData(const std
   return data;
 }
 
-// Routine used by FlexCAN for retrieving the received CAN data.
+/// @brief Routine used by FlexCAN for retrieving the received CAN data.
+/// @param msg The received CAN message.
 void CanDataHandler::canMShandler(const CAN_message_t& msg)
 {
   if (!msg.flags.extended)
